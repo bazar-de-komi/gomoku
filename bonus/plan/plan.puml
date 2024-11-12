@@ -1,0 +1,40 @@
+@startuml
+
+package gomoku
+{
+    struct Position {
+        int x
+        int y
+    }
+
+    enum TableCell {
+        EMPTY
+        AI
+        PLAYER
+    }
+
+    struct MapData {
+        Position pos
+        TableCell cell
+    }
+
+    class GameLoop {
+        public:
+        private:
+            std::vector<MapData> map
+            AI ai
+    }
+
+    class AI {
+        public:
+            play_ai_turn(const std::vector<MapData> &)
+        private:
+    }
+
+    Position --> MapData
+    TableCell --> MapData
+    MapData --> GameLoop
+    AI --> GameLoop
+}
+
+@enduml
