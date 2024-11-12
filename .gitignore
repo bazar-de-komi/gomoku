@@ -1,3 +1,35 @@
-**/.vscode/**
+# Unwanted editor cache
+.vscode/**
+
+# No temporary files
+*tmp*
+
+# No docker cache
+*.bash_history
+
+# No environements allowed
+.env
+
+# Ignore created python binaries
+binarea_server
+
+# No modules allowed
+node_modules/**
+
+# The files to ignore for the liskvork project
 board.log
 config.ini
+
+# No unwanted cache
+**/.cache/**
+
+# No unwanted environements
+**/.env/**
+**/env/**
+**/lenv/**
+**/menv/**
+**/wenv/**
+**/server_env/**
+**/wserver_env/**
+**/doc/**
+**/.cache/**
