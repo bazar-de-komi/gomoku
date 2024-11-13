@@ -10,7 +10,7 @@
 
     #include <vector>
     #include <string>
-    #include "Data.hpp"
+    #include "src/Data.hpp"
 
 namespace gomoku
 {

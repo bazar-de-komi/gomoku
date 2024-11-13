@@ -11,8 +11,8 @@ RM	=	rm -rf
 
 SRC	=	./Main.cpp \
 \
-		./src/Ia.cpp	\
-		./src/Parser.cpp	\
+		./src/AI/AI.cpp	\
+		./src/parser/Parser.cpp	\
 \
 
 OBJ	=	$(SRC:.cpp=.o)

@@ -5,9 +5,11 @@
 ** main.cpp
 */
 
-#include "constants.hpp"
+#include "Constants.hpp"
+#include "src/parser/Parser.hpp"
 
 int main(int argc, char **argv)
 {
-    return 0;
+    gomoku::Parser pars = gomoku::Parser(argc, argv);
+    return pars.mainloop();
 }

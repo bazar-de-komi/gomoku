@@ -5,7 +5,7 @@
 ** AI
 */
 
-#include "AI.hpp"
+#include "src/ai/AI.hpp"
 
 namespace gomoku
 {
