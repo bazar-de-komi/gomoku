@@ -3,6 +3,7 @@
 
 # No temporary files
 *tmp*
+*.o
 
 # No docker cache
 *.bash_history
@@ -10,8 +11,8 @@
 # No environements allowed
 .env
 
-# Ignore created python binaries
-binarea_server
+# Ignore created binaries
+pbrain-gomoku-ai
 
 # No modules allowed
 node_modules/**
