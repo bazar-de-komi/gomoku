@@ -5,8 +5,7 @@
 ** Data
 */
 
-#ifndef DATA_HPP_
-    #define DATA_HPP_
+#pragma once
 
 namespace gomoku
 {
@@ -16,5 +15,3 @@ namespace gomoku
         PLAYER
     };
 }
-
-#endif

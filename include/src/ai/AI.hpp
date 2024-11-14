@@ -5,8 +5,7 @@
 ** AI
 */
 
-#ifndef AI_HPP_
-    #define AI_HPP_
+#pragma once
 
     #include <vector>
     #include <string>
@@ -23,5 +22,3 @@ namespace gomoku
         private:
     };
 }
-
-#endif
