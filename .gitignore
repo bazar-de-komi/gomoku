@@ -20,6 +20,7 @@ node_modules/**
 # The files to ignore for the liskvork project
 board.log
 config.ini
+!bonus/example/config/config.ini
 
 # No unwanted cache
 **/.cache/**
