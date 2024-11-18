@@ -1,29 +1,32 @@
-@startuml
+@startuml gomoku plan
 
 package gomoku
 {
     enum TableCell {
-        EMPTY
-        AI
-        PLAYER
+        +EMPTY: Indicates that the cell is not populated
+        +AI: Indicates that the cell has been populated by the ai
+        +PLAYER: Indicates that the cell has been populated by the player
     }
 
-    class GameLoop {
-        public:
-        private:
-            std::vector<std::vector<TableCell>> map
-            AI ai
+    class Parser {
+        +int mainloop(): The main function of the program.
+        -std::vector<std::string> get_commands(): The function in charge of getting a list of the commands sent by the program.
+        -int _argc: The number of arguments passed as a parameter
+        -char **_argv: The arguments passed as a parameter
+        -std::vector<std::vector<TableCell>> _map: The current map of the game table.
+        -AI _ai: The initizalised instance of the AI class
+        -int _board_size: The size of the board to generate. i.e. START 20
+
     }
 
     class AI {
-        public:
-            std::string play_ai_turn(const std::vector<std::vector<TableCell>> &)
-        private:
+        +std::string play_ai_turn(const std::vector<std::vector<TableCell>> &): Function in charge of calculating the next move for the current turn.
+        -void predict_possible_moves(const std::vector<std::vector<TableCell>> &, int y, int x): Function in charge of predicting the next possible moves for a given piece.
     }
 
-    TableCell --> GameLoop
+    TableCell --> Parser
     TableCell --> AI
-    AI --> GameLoop
+    Parser --> AI
 }
 
 @enduml
