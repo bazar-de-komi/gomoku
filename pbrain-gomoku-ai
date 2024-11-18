@@ -1,0 +1,22 @@
+#!/bin/env python3
+import sys
+import src as S
+
+class Main:
+    def __init__(self):
+        self.board = []
+        self.size = 0
+        self.turn = 0
+        self.player = 0
+        self.opponent = 0
+        self.x = 0
+        self.y = 0
+        
+    def __call__(self):
+        print("Hello world")
+        print(dir(S))
+
+
+if __name__ == "__main__":
+    MI = Main()
+    sys.exit(MI())

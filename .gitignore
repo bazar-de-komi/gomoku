@@ -12,9 +12,6 @@
 # No environements allowed
 .env
 
-# Ignore created binaries
-pbrain-gomoku-ai
-
 # No modules allowed
 node_modules/**
 
