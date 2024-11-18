@@ -54,6 +54,20 @@ namespace gomoku
 
     bool AI::_check_horizontal(const std::vector<std::vector<TableCell>> &board, TableCell player)
     {
+        int count = 0;
+
+        for (std::size_t j = 0; j < board.size(); ++j) {
+            for (std::size_t i = 0; i < board[j].size(); ++i) {
+                if (board[j][i] == player) {
+                    count++;
+                    if (count == 5) {
+                        return true;
+                    }
+                } else {
+                    count = 0;
+                }
+            }
+        }
         return false;
     }
 
