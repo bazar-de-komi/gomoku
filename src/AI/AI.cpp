@@ -25,7 +25,7 @@ namespace gomoku
 
         for (std::size_t y = 0; y < board.size(); ++y) {
             for (std::size_t x = 0; x < board[y].size(); ++x) {
-                if (board[y][x] == TableCell::EMPTY) {
+                if (board[y][x] == TableCell::CELL_EMPTY) {
                     possible_moves.emplace_back(y, x);
                 }
             }
@@ -36,10 +36,10 @@ namespace gomoku
     int AI::_simulate_random_game(std::vector<std::vector<TableCell>> board, TableCell current_player)
     {
         while (true) {
-            if (_is_terminal(board, TableCell::AI)) {
+            if (_is_terminal(board, TableCell::CELL_AI)) {
                 return 1;
             }
-            if (_is_terminal(board, TableCell::PLAYER)) {
+            if (_is_terminal(board, TableCell::CELL_PLAYER)) {
                 return -1;
             }
             std::vector<std::pair<int, int>> moves = _generate_possible_moves(board);
@@ -48,7 +48,7 @@ namespace gomoku
             }
             auto move = moves[std::rand() % moves.size()];
             board[move.first][move.second] = current_player;
-            current_player = (current_player == TableCell::AI) ? TableCell::PLAYER : TableCell::AI;
+            current_player = (current_player == TableCell::CELL_AI) ? TableCell::CELL_PLAYER : TableCell::CELL_AI;
         }
     }
 
@@ -90,7 +90,7 @@ namespace gomoku
     {
         for (const auto &column : board) {
             for (TableCell cell : column) {
-                if (cell == TableCell::EMPTY) {
+                if (cell == TableCell::CELL_EMPTY) {
                     return false;
                 }
             }
@@ -132,8 +132,8 @@ namespace gomoku
             for (int i = 0; i < MAX_SIMULATIONS; ++i) {
                 auto board_copy = board;
                 auto move = possible_ai_moves[j];
-                board_copy[move.first][move.second] = TableCell::AI;
-                result = _simulate_random_game(board_copy, TableCell::PLAYER);
+                board_copy[move.first][move.second] = TableCell::CELL_AI;
+                result = _simulate_random_game(board_copy, TableCell::CELL_PLAYER);
                 scores[j] += result;
                 simulations[j] += 1;
             }
