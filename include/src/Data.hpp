@@ -10,8 +10,8 @@
 namespace gomoku
 {
     enum TableCell {
-        EMPTY,
-        AI,
-        PLAYER
+        CELL_EMPTY,
+        CELL_AI,
+        CELL_PLAYER
     };
 }
