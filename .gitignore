@@ -1,5 +1,6 @@
 # Unwanted editor cache
 .vscode/**
+**/__pycache__/**
 
 # No temporary files
 *tmp*
