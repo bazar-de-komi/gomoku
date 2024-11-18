@@ -26,6 +26,7 @@ namespace gomoku
             bool _check_vertical(const std::vector<std::vector<TableCell>> &, TableCell);
             bool _check_diagonal_to_down(const std::vector<std::vector<TableCell>> &, TableCell);
             bool _check_diagonal_to_up(const std::vector<std::vector<TableCell>> &, TableCell);
+            bool _is_board_full(const std::vector<std::vector<TableCell>> &);
             bool _is_terminal(const std::vector<std::vector<TableCell>> &, TableCell);
     };
 }

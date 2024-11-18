@@ -72,8 +72,35 @@ namespace gomoku
         return false;
     }
 
+    bool AI::_is_board_full(const std::vector<std::vector<TableCell>> &board)
+    {
+        for (const auto &column : board) {
+            for (TableCell cell : column) {
+                if (cell == TableCell::EMPTY) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
     bool AI::_is_terminal(const std::vector<std::vector<TableCell>> &board, TableCell player)
     {
+        if (_check_horizontal(board, player)) {
+            return true;
+        }
+        if (_check_vertical(board, player)) {
+            return true;
+        }
+        if (_check_diagonal_to_down(board, player)) {
+            return true;
+        }
+        if (_check_diagonal_to_up(board, player)) {
+            return true;
+        }
+        if (_is_board_full(board)) {
+            return true;
+        }
         return false;
     }
 
