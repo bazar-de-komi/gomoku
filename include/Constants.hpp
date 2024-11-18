@@ -10,3 +10,5 @@
 static const bool DEBUG = false;
 static const int ERROR = 84;
 static const int SUCCESS = 0;
+
+static const int MAX_SIMULATIONS = 1000;
