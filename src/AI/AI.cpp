@@ -73,6 +73,21 @@ namespace gomoku
 
     bool AI::_check_vertical(const std::vector<std::vector<TableCell>> &board, TableCell player)
     {
+        int rows = board.size();
+        int cols = board[0].size();
+        int count = 0;
+
+        for (int i = 0; i < rows; ++i) {
+            count = 0;
+            for (int j = 0; j < cols; ++j) {
+                if (board[i][j] == player) {
+                    count++;
+                    if (count == 5) return true;
+                } else {
+                    count = 0;
+                }
+            }
+        }
         return false;
     }
 
