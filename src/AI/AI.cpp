@@ -52,7 +52,7 @@ namespace gomoku
         }
     }
 
-    bool AI::_check_horizontal(const std::vector<std::vector<TableCell>> &board, TableCell player)
+    bool AI::_check_horizontal(const std::vector<std::vector<TableCell>> &board, const TableCell &player)
     {
         int count = 0;
 
@@ -71,7 +71,7 @@ namespace gomoku
         return false;
     }
 
-    bool AI::_check_vertical(const std::vector<std::vector<TableCell>> &board, TableCell player)
+    bool AI::_check_vertical(const std::vector<std::vector<TableCell>> &board, const TableCell &player)
     {
         int rows = board.size();
         int cols = board[0].size();
@@ -91,12 +91,42 @@ namespace gomoku
         return false;
     }
 
-    bool AI::_check_diagonal_to_down(const std::vector<std::vector<TableCell>> &board, TableCell player)
+    bool AI::_check_diagonal_to_down(const std::vector<std::vector<TableCell>> &board, const TableCell &player)
     {
+        std::vector<std::pair<int, int>> cells;
+        std::pair<int, int> cell_back_copy;
+
+        for (std::size_t j = 0; j < board.size(); ++j) {
+            for (std::size_t i = 0; i < board[j].size(); ++i) {
+                if ((i > board[j].size() - 5 && j < 5) ||
+                (i < 5 && j > board.size())) {
+                    continue;
+                }
+                if (cells.empty() && board[j][i] == player) {
+                    cells.emplace_back(j, i);
+                    continue;
+                }
+                if (i > 0 && j > 0 && !cells.empty()) {
+                    cell_back_copy = cells.back();
+                    if (cell_back_copy.first == j - 1 && cell_back_copy.second == i - 1) {
+                        if (board[j][i] == player) {
+                            cells.emplace_back(j, i);
+                            continue;
+                        } else {
+                            cells.clear();
+                            continue;
+                        }
+                    }
+                }
+                if (cells.size() == 5) {
+                    return true;
+                }
+            }
+        }
         return false;
     }
 
-    bool AI::_check_diagonal_to_up(const std::vector<std::vector<TableCell>> &board, TableCell player)
+    bool AI::_check_diagonal_to_up(const std::vector<std::vector<TableCell>> &board, const TableCell &player)
     {
         return false;
     }
@@ -113,7 +143,7 @@ namespace gomoku
         return true;
     }
 
-    bool AI::_is_terminal(const std::vector<std::vector<TableCell>> &board, TableCell player)
+    bool AI::_is_terminal(const std::vector<std::vector<TableCell>> &board, const TableCell &player)
     {
         if (_check_horizontal(board, player)) {
             return true;
