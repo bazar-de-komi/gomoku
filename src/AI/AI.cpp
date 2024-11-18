@@ -114,4 +114,5 @@ namespace gomoku
         ai_play += ",";
         ai_play += std::to_string(possible_ai_moves[best_index].first);
         return ai_play;
+    }
 }
