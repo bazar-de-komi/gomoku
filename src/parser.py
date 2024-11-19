@@ -3,7 +3,7 @@ This module contains the parser for the command line arguments.
 """
 
 import sys
-from typing import List, Dict
+from typing import List, Dict, Union
 from threading import Thread
 from . import constants as CONST
 from .ai import AI
@@ -27,6 +27,22 @@ class SystemBoard:
             [CONST.CELL_EMPTY for _ in range(self.board_size)]
             for _ in range(self.board_size)
         ]
+
+    def clear_board(self) -> None:
+        """
+        Clear the board.
+        """
+        for coli, col in enumerate(self.board):
+            for index in range(len(col)):
+                self.board[coli][index] = CONST.CELL_EMPTY
+
+    def recreate_board(self, size: Union[int, None] = None) -> None:
+        """
+        Recreate the board.
+        """
+        if size is not None:
+            self.create_board(size)
+        self.clear_board()
 
 
 class ParserThread:
@@ -228,8 +244,11 @@ class ParserThread:
         Returns:
             int: _description_
         """
-        if cmd[0] == "":
-            pass
+        if len(cmd) != 1:
+            print(f"ERROR Invalid restart command: {cmd}")
+            return CONST.ERROR
+        self.game_board.recreate_board()
+        self.print_success()
         return CONST.SUCCESS
 
 
