@@ -118,6 +118,7 @@ class ParserThread:
             self.update_global_status(status)
             self.completed = True
             return status
+        my_print("UNKNOWN")
         self.update_global_status(CONST.ERROR)
         self.completed = True
         return status
