@@ -84,7 +84,8 @@ class ParserThread:
         """
         print(f"Received commands: cmd={cmd}")
         command = cmd[0].upper()
-        cmd_args = cmd[1:]
+        # cmd_args = cmd[1:]
+        cmd_args = cmd
         if command == CONST.CMD_START:
             status = self.process_start_command(cmd_args)
             self.update_global_status(status)
