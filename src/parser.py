@@ -192,7 +192,8 @@ class ParserThread:
         if col < 0 or col >= self.game_board.board_size:
             print(f"ERROR Invalid turn parameters: {col}")
             return CONST.ERROR
-        print(self.ai.play_ai_turn(self.game_board.board, row, col))
+        self.game_board.board[row][col] = CONST.CELL_ENEMY
+        print(self.ai.play_ai_turn(self.game_board.board))
         return CONST.SUCCESS
 
     def process_board_command(self, cmd: List[str]) -> int:
