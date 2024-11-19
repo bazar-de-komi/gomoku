@@ -9,6 +9,13 @@ from . import constants as CONST
 from .ai import AI
 
 
+def my_print(string: str, file=sys.stdout) -> None:
+    """
+    Print the string to the specified file.
+    """
+    print(string, file=file, flush=True)
+
+
 class SystemBoard:
     """
     The class in charge of creating the board for the game.
@@ -82,7 +89,7 @@ class ParserThread:
         Returns:
             int: _description_
         """
-        print(f"Received commands: cmd={cmd}")
+        my_print(f"Received commands: cmd={cmd}")
         command = cmd[0].upper()
         # cmd_args = cmd[1:]
         cmd_args = cmd
@@ -119,7 +126,7 @@ class ParserThread:
         """
         Print the success message.
         """
-        print("OK")
+        my_print("OK")
 
     def process_start_command(self, cmd: List[str]) -> int:
         """
@@ -132,14 +139,14 @@ class ParserThread:
             int: _description_
         """
         if len(cmd) != 2:
-            print(f"ERROR Unsupported number of arguments: {len(cmd)}")
+            my_print(f"ERROR Unsupported number of arguments: {len(cmd)}")
             return CONST.ERROR
         if not cmd[1].isdigit():
-            print(f"ERROR Invalid board size: {cmd[1]}")
+            my_print(f"ERROR Invalid board size: {cmd[1]}")
             return CONST.ERROR
         size = int(cmd[1])
         if size < 5:
-            print(f"ERROR Invalid board size: {cmd[1]}")
+            my_print(f"ERROR Invalid board size: {cmd[1]}")
             return CONST.ERROR
         self.game_board.create_board(size)
         self.print_success()
@@ -156,9 +163,9 @@ class ParserThread:
             int: _description_
         """
         if len(cmd) != 1:
-            print(f"ERROR Unsupported number of arguments: {len(cmd)}")
+            my_print(f"ERROR Unsupported number of arguments: {len(cmd)}")
             return CONST.ERROR
-        print(self.ai.play_ai_turn(self.game_board.board))
+        my_print(self.ai.play_ai_turn(self.game_board.board))
         return CONST.SUCCESS
 
     def process_turn_command(self, cmd: List[str]) -> int:
@@ -173,28 +180,28 @@ class ParserThread:
         """
         cmd_length = len(cmd)
         if cmd_length not in (2, 3):
-            print(f"ERROR Unsupported number of arguments: {len(cmd)}")
+            my_print(f"ERROR Unsupported number of arguments: {len(cmd)}")
             return CONST.ERROR
         if cmd_length == 2:
             turn_params = cmd[1].split(",")
             if len(turn_params) != 2:
-                print(f"ERROR Invalid turn parameters: {cmd[1]}")
+                my_print(f"ERROR Invalid turn parameters: {cmd[1]}")
                 return CONST.ERROR
         else:
             turn_params = [cmd[1], cmd[2]]
         if not turn_params[0].isdigit() or not turn_params[1].isdigit():
-            print(f"ERROR Invalid turn parameters: {cmd[1]}")
+            my_print(f"ERROR Invalid turn parameters: {cmd[1]}")
             return CONST.ERROR
         row = int(turn_params[0])
         col = int(turn_params[1])
         if row < 0 or row >= self.game_board.board_size:
-            print(f"ERROR Invalid turn parameters: {row}")
+            my_print(f"ERROR Invalid turn parameters: {row}")
             return CONST.ERROR
         if col < 0 or col >= self.game_board.board_size:
-            print(f"ERROR Invalid turn parameters: {col}")
+            my_print(f"ERROR Invalid turn parameters: {col}")
             return CONST.ERROR
         self.game_board.board[row][col] = CONST.CELL_ENEMY
-        print(self.ai.play_ai_turn(self.game_board.board))
+        my_print(self.ai.play_ai_turn(self.game_board.board))
         return CONST.SUCCESS
 
     def process_board_command(self, cmd: List[str]) -> int:
@@ -211,27 +218,29 @@ class ParserThread:
             return CONST.SUCCESS
         if cmd[0].upper() == "DONE":
             self.board_mode = False
-            print(f"{self.game_board.board_size},{self.game_board.board_size}")
+            msg = f"{self.game_board.board_size},"
+            msg += f"{self.game_board.board_size}"
+            my_print(msg)
             self.update_global_status(CONST.SUCCESS)
             return CONST.SUCCESS
         board_line = cmd[0].split(",")
         if len(board_line) != 3:
-            print(f"ERROR Invalid board line: {cmd[0]}")
+            my_print(f"ERROR Invalid board line: {cmd[0]}")
             return CONST.ERROR
         if not board_line[0].isdigit() or not board_line[1].isdigit():
-            print(f"ERROR Invalid board line: {cmd[0]}")
+            my_print(f"ERROR Invalid board line: {cmd[0]}")
             return CONST.ERROR
         row = int(board_line[0])
         col = int(board_line[1])
         value = CONST.BOARD_EQUIVALENCE.get(board_line[2])
         if value is None:
-            print(f"ERROR Invalid board value: {board_line[2]}")
+            my_print(f"ERROR Invalid board value: {board_line[2]}")
             return CONST.ERROR
         if row < 0 or row >= self.game_board.board_size:
-            print(f"ERROR Invalid board row: {row}")
+            my_print(f"ERROR Invalid board row: {row}")
             return CONST.ERROR
         if col < 0 or col >= self.game_board.board_size:
-            print(f"ERROR Invalid board col: {col}")
+            my_print(f"ERROR Invalid board col: {col}")
             return CONST.ERROR
         self.game_board.board[row][col] = value
         return CONST.SUCCESS
@@ -247,7 +256,7 @@ class ParserThread:
             int: _description_
         """
         if len(cmd) != 1:
-            print(f"ERROR Invalid restart command: {cmd}")
+            my_print(f"ERROR Invalid restart command: {cmd}")
             return CONST.ERROR
         self.game_board.recreate_board()
         self.print_success()
@@ -272,7 +281,7 @@ class Parser:
         """
         Print an error message to the standard error output.
         """
-        print(string, file=sys.stderr)
+        my_print(string, file=sys.stderr)
 
     def __call__(self) -> int:
         """_summary_
