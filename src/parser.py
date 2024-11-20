@@ -3,16 +3,23 @@ This module contains the parser for the command line arguments.
 """
 
 import sys
-from typing import List, Union
+from typing import List, Union, TextIO
 from . import constants as CONST
 from .ai import AI
 
 
-def my_print(string: str, file=sys.stdout) -> None:
+def my_print(string: str, file: Union[TextIO, None] = None) -> None:
     """
-    Print the string to the specified file.
+        Print the string to the specified file.
+
+    Args:
+        string (str): The string to be displayed.
+        file (Union[TextIO, None], optional): The stream to which to output the content. Defaults to None.
     """
-    print(string, file=file, flush=True)
+    if file is None:
+        print(string, flush=True, file=sys.stdout)
+    else:
+        print(string, flush=True, file=file)
 
 
 class SystemBoard:
@@ -88,7 +95,6 @@ class ParserThread:
         Returns:
             int: _description_
         """
-        my_print(f"Received commands: cmd={cmd}")
         command = cmd[0].upper()
         # cmd_args = cmd[1:]
         cmd_args = cmd
@@ -110,15 +116,17 @@ class ParserThread:
         if command == CONST.CMD_BOARD:
             self.board_mode = True
             self.board_index = 0
-            self.update_global_status(CONST.SUCCESS)
-            return CONST.SUCCESS
+            status = CONST.SUCCESS
+            self.update_global_status(status)
+            return status
         if command == CONST.CMD_RESTART:
             status = self.process_restart_command(cmd_args)
             self.update_global_status(status)
             self.completed = True
             return status
         my_print("UNKNOWN")
-        self.update_global_status(CONST.ERROR)
+        status = CONST.ERROR
+        self.update_global_status(status)
         self.completed = True
         return status
 
@@ -165,7 +173,8 @@ class ParserThread:
         if len(cmd) != 1:
             my_print(f"ERROR Unsupported number of arguments: {len(cmd)}")
             return CONST.ERROR
-        my_print(self.ai.play_ai_turn(self.game_board.board))
+        if self.ai is not None:
+            my_print(self.ai.play_ai_turn(self.game_board.board))
         return CONST.SUCCESS
 
     def process_turn_command(self, cmd: List[str]) -> int:
@@ -201,7 +210,8 @@ class ParserThread:
             my_print(f"ERROR Invalid turn parameters: {col}")
             return CONST.ERROR
         self.game_board.board[row][col] = CONST.CELL_ENEMY
-        my_print(self.ai.play_ai_turn(self.game_board.board))
+        if self.ai is not None:
+            my_print(self.ai.play_ai_turn(self.game_board.board))
         return CONST.SUCCESS
 
     def process_board_command(self, cmd: List[str]) -> int:
@@ -276,12 +286,6 @@ class Parser:
         self.game_board = SystemBoard()
         self.ai: AI = AI()
 
-    def perror(self, string: str) -> None:
-        """
-        Print an error message to the standard error output.
-        """
-        my_print(string, file=sys.stderr)
-
     def update_global_status(self, status: bool) -> None:
         """
         Update the status of the global variable.
@@ -305,6 +309,8 @@ class Parser:
             cmd_bin = cmd_line[0].upper()
             if cmd_bin == CONST.CMD_END:
                 self.continue_running = False
+                self.update_global_status(CONST.SUCCESS)
+                continue
             if cmd_bin in CONST.COMMANDS:
                 if node.board_mode is True:
                     status = node.process_board_command(cmd_line)
@@ -313,6 +319,6 @@ class Parser:
                 node = ParserThread(self.game_board, self.ai)
                 node.process_command(cmd_line)
             else:
-                self.perror(f"Unknown command: {cmd_bin}")
+                my_print("UNKNOWN")
                 self.update_global_status(CONST.ERROR)
         return self.global_status
