@@ -1,57 +1,101 @@
 """
-The file contains the AI class that will be used to play the game.
+The file contains the AI class that will be used to play the game
 """
 
 import random
+import time
 from typing import List, Tuple
 from . import constants as CONST
 
 class AI:
+    """
+    The class that contains the ai for the gomoku game
+    """
     def __init__(self):
-        random.seed()
+        pass
 
     def _generate_possible_moves(self, board: List[List[int]], radius: int = 2) -> List[Tuple[int, int]]:
         """
         Generate possible moves in a limited area around the stones
         """
         moves = set()
-        for y, col in enumerate(board):
-            for x, cell in enumerate(col):
-                if cell != CONST.CELL_EMPTY:
+        cols = len(board)
+        rows = len(board[0])
+
+        for y in range(cols):
+            for x in range(rows):
+                if board[y][x] != CONST.CELL_EMPTY:
                     for dy in range(-radius, radius + 1):
                         for dx in range(-radius, radius + 1):
                             ny = y + dy
                             nx = x + dx
-                            if 0 <= ny < len(board) and 0 <= nx < len(col) and board[ny][nx] == CONST.CELL_EMPTY:
+                            if 0 <= ny < cols and 0 <= nx < rows and board[ny][nx] == CONST.CELL_EMPTY:
                                 moves.add((ny, nx))
         return list(moves)
+
+    def _check_all_alignments(self, board: List[List[int]], player: int) -> bool:
+        """
+        Check all alignments
+        """
+        rows: int = len(board[0])
+        cols: int = len(board)
+        vertical: List[Tuple[int, int]] = []
+        horizontal: List[Tuple[int, int]] = []
+        diag_down: List[Tuple[int, int]] = []
+        diag_up: List[Tuple[int, int]] = []
+
+        for y in range(cols):
+            for x in range(rows):
+                if len(horizontal) == 0 or (y == horizontal[-1][0] and x == horizontal[-1][1] + 1 and board[y][x] == player):
+                    horizontal.append((y, x))
+                    if len(horizontal) == 5:
+                        return True
+                elif len(horizontal) != 0 and y == horizontal[-1][0] and x == horizontal[-1][1] + 1 and board[y][x] != player:
+                    horizontal.clear()
+                if len(vertical) == 0 or (y == vertical[-1][0] + 1 and x == vertical[-1][1] and board[y][x] == player):
+                    vertical.append((y, x))
+                    if len(vertical) == 5:
+                        return True
+                elif len(vertical) != 0 and y == vertical[-1][0] + 1 and x == vertical[-1][1] and board[y][x] != player:
+                    vertical.clear()
+                if len(diag_down) == 0 or (y == diag_down[-1][0] + 1 and x == diag_down[-1][1] + 1 and board[y][x] == player):
+                    diag_down.append((y, x))
+                    if len(diag_down) == 5:
+                        return True
+                elif len(diag_down) != 0 and y == diag_down[-1][0] + 1 and x == diag_down[-1][1] + 1 and board[y][x] != player:
+                    diag_down.clear()
+                if len(diag_up) == 0 or (y == diag_up[-1][0] - 1 and x == diag_up[-1][1] + 1 and board[y][x] == player):
+                    diag_up.append((y, x))
+                    if len(diag_up) == 5:
+                        return True
+                elif len(diag_up) != 0 and y == diag_up[-1][0] - 1 and x == diag_up[-1][1] + 1 and board[y][x] != player:
+                    diag_up.clear()
+        return False
 
     def _simulate_random_game(self, board: List[List[int]], current_player: int, depth_total: int) -> int:
         """
         Simulate a random game with a limited depth
         """
         move_stack: List[Tuple[int, int]] = []
+        moves: List[Tuple[int, int]] = self._generate_possible_moves(board, 2)
         depth: int = 0
         result: int = 0
 
         while depth < depth_total:
-            if self._is_terminal(board, CONST.CELL_PLAYER):
-                result = 1
+            if move_stack and self._check_all_alignments(board, current_player):
+                if current_player == CONST.CELL_PLAYER :
+                    result = 1
+                else:
+                    result = -1
                 break
-            if self._is_terminal(board, CONST.CELL_ENEMY):
-                result = -1
-                break
-            moves: List[Tuple[int, int]] = self._generate_possible_moves(board)
             if not moves:
                 result = 0
                 break
             move: Tuple[int, int] = random.choice(moves)
             board[move[0]][move[1]] = current_player
             move_stack.append(move)
-            if current_player == CONST.CELL_PLAYER:
-                current_player = CONST.CELL_ENEMY
-            else:
-                current_player = CONST.CELL_PLAYER
+            moves.remove(move)
+            current_player = 3 - current_player
             depth += 1
         for y, x in reversed(move_stack):
             board[y][x] = CONST.CELL_EMPTY
@@ -59,101 +103,13 @@ class AI:
             return result
         return 0
 
-    def _check_line(self, sequence: List[int], player: int) -> bool:
-        """
-        Check a line with winning sequence
-        """
-        count: int = 0
-        for cell in sequence:
-            if cell == player:
-                count += 1
-                if count == 5:
-                    return True
-            else:
-                count = 0
-        return False
-
-    def _check_horizontal(self, board: List[List[int]], player: int) -> bool:
-        """
-        Check the rows
-        """
-        for row in board:
-            if self._check_line(row, player):
-                return True
-        return False
-
-    def _check_vertical(self, board: List[List[int]], player: int) -> bool:
-        """
-        Check the columns
-        """
-        for col in range(len(board[0])):
-            column = [board[row][col] for row in range(len(board))]
-            if self._check_line(column, player):
-                return True
-        return False
-
-    def _check_diagonal_to_down(self, board: List[List[int]], player: int) -> bool:
-        """
-        Check the diagonal to down
-        """
-        rows = len(board)
-        cols = len(board[0])
-        for start_row in range(rows - 4):
-            for start_col in range(cols - 4):
-                if all(board[start_row + i][start_col + i] == player for i in range(5)):
-                    return True
-        return False
-
-    def _check_diagonal_to_up(self, board: List[List[int]], player: int) -> bool:
-        """
-        Check the diagonal to up
-        """
-        rows: int = len(board)
-        cols: int = len(board[0])
-        for start_row in range(4, rows):
-            for start_col in range(cols - 4):
-                if all(board[start_row - i][start_col + i] == player for i in range(5)):
-                    return True
-        return False
-
-    def _is_terminal(self, board: List[List[int]], player: int) -> bool:
-        """
-        Define if a game can be finished by one of the two players
-        """
-        return (
-            self._check_horizontal(board, player) or
-            self._check_vertical(board, player) or
-            self._check_diagonal_to_down(board, player) or
-            self._check_diagonal_to_up(board, player)
-        )
-    
-    def _get_stone_number(self, board: List[List[int]]) -> int:
-        """
-        Get stone number on the board
-        """
-        count: int = 0;
-        for y in range(len(board)):
-            for x in range(len(board[y])):
-                if board[y][x] != CONST.CELL_EMPTY:
-                    count += 1
-        return count
-
     def play_ai_turn(self, board: List[List[int]]) -> str:
         """
         Play the ia turn using Monte Carlo algorithm
         """
-        stone_nb = self._get_stone_number(board)
-        total_depth: int = 0
-        radius: int = 0
-        if stone_nb >= 0 and stone_nb < 20:
-            total_depth = 4
-            radius = 2
-        if stone_nb >= 20 and stone_nb < 140:
-            total_depth = 2
-            radius = 1
-        if stone_nb >= 160 and stone_nb < 200:
-            total_depth = 3
-            radius = 1
+        start_time = time.time()
+        total_depth: int = 7
+        radius: int = 2
         possible_ai_moves: List[Tuple[int, int]] = self._generate_possible_moves(board, radius)
         scores: List[int] = [0] * len(possible_ai_moves)
         simulations: List[int] = [0] * len(possible_ai_moves)
@@ -163,25 +119,29 @@ class AI:
         best_ratio: float = -float('inf')
 
         if not possible_ai_moves:
-            x = random.randint(0, len(board))
-            y = random.randint(0, len(board[0]))
+            x: int = random.randint(0, len(board[0]))
+            y: int = random.randint(0, len(board))
             return f"{x},{y}"
         for idx, move in enumerate(possible_ai_moves):
+            if (time.time() - start_time) >= 4.8:
+                break
             for _ in range(CONST.MAX_SIMULATIONS):
+                if (time.time() - start_time) >= 4.8:
+                    break
                 board[move[0]][move[1]] = CONST.CELL_PLAYER
                 result = self._simulate_random_game(board, CONST.CELL_ENEMY, total_depth)
                 scores[idx] += result
                 simulations[idx] += 1
                 board[move[0]][move[1]] = CONST.CELL_EMPTY
-        best_index = 0
-        best_ratio = -float('inf')
-        for idx, (score, sim_count) in enumerate(zip(scores, simulations)):
-            if sim_count > 0:
-                ratio = score / sim_count
+            if simulations[idx] > 0:
+                ratio = scores[idx] / simulations[idx]
             else:
                 ratio = 0
             if ratio > best_ratio:
                 best_ratio = ratio
                 best_index = idx
         best_move = possible_ai_moves[best_index]
+        end_time = time.time()
+        execution_time = end_time - start_time
+        print(f"Temps d'exécution: {execution_time} secondes")
         return f"{best_move[1]},{best_move[0]}"
