@@ -10,7 +10,7 @@ class AI:
     def __init__(self):
         random.seed()
 
-    def _generate_possible_moves(self, board: List[List[int]], radius: int = 1) -> List[Tuple[int, int]]:
+    def _generate_possible_moves(self, board: List[List[int]], radius: int = 2) -> List[Tuple[int, int]]:
         """
         Generate possible moves in a limited area around the stones
         """
@@ -26,7 +26,7 @@ class AI:
                                 moves.add((ny, nx))
         return list(moves)
 
-    def _simulate_random_game(self, board: List[List[int]], current_player: int, depth_total: int = 4) -> int:
+    def _simulate_random_game(self, board: List[List[int]], current_player: int, depth_total: int) -> int:
         """
         Simulate a random game with a limited depth
         """
@@ -96,7 +96,8 @@ class AI:
         """
         Check the diagonal to down
         """
-        rows, cols = len(board), len(board[0])
+        rows = len(board)
+        cols = len(board[0])
         for start_row in range(rows - 4):
             for start_col in range(cols - 4):
                 if all(board[start_row + i][start_col + i] == player for i in range(5)):
@@ -125,12 +126,35 @@ class AI:
             self._check_diagonal_to_down(board, player) or
             self._check_diagonal_to_up(board, player)
         )
+    
+    def _get_stone_number(self, board: List[List[int]]) -> int:
+        """
+        Get stone number on the board
+        """
+        count: int = 0;
+        for y in range(len(board)):
+            for x in range(len(board[y])):
+                if board[y][x] != CONST.CELL_EMPTY:
+                    count += 1
+        return count
 
     def play_ai_turn(self, board: List[List[int]]) -> str:
         """
         Play the ia turn using Monte Carlo algorithm
         """
-        possible_ai_moves: List[Tuple[int, int]] = self._generate_possible_moves(board)
+        stone_nb = self._get_stone_number(board)
+        total_depth: int = 0
+        radius: int = 0
+        if stone_nb >= 0 and stone_nb < 20:
+            total_depth = 4
+            radius = 2
+        if stone_nb >= 20 and stone_nb < 140:
+            total_depth = 2
+            radius = 1
+        if stone_nb >= 160 and stone_nb < 200:
+            total_depth = 3
+            radius = 1
+        possible_ai_moves: List[Tuple[int, int]] = self._generate_possible_moves(board, radius)
         scores: List[int] = [0] * len(possible_ai_moves)
         simulations: List[int] = [0] * len(possible_ai_moves)
         result: int = 0
@@ -145,7 +169,7 @@ class AI:
         for idx, move in enumerate(possible_ai_moves):
             for _ in range(CONST.MAX_SIMULATIONS):
                 board[move[0]][move[1]] = CONST.CELL_PLAYER
-                result = self._simulate_random_game(board, CONST.CELL_ENEMY)
+                result = self._simulate_random_game(board, CONST.CELL_ENEMY, total_depth)
                 scores[idx] += result
                 simulations[idx] += 1
                 board[move[0]][move[1]] = CONST.CELL_EMPTY
