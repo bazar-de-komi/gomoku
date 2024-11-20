@@ -3,8 +3,7 @@ This module contains the parser for the command line arguments.
 """
 
 import sys
-from typing import List, Dict, Union
-from threading import Thread
+from typing import List, Union
 from . import constants as CONST
 from .ai import AI
 
@@ -274,7 +273,6 @@ class Parser:
         self.global_status = CONST.SUCCESS
         self.continue_running: bool = True
         self.board: List[List[int]]
-        self.threads: List[Dict[Thread]] = []
         self.game_board = SystemBoard()
         self.ai: AI = AI()
 
@@ -284,62 +282,6 @@ class Parser:
         """
         my_print(string, file=sys.stderr)
 
-    def __call__(self) -> int:
-        """_summary_
-            The function in charge of processing the incoming commands.
-
-        Returns:
-            int: _description_
-        """
-        while self.continue_running:
-            data = input()
-            cmd_line = data.split(" ")
-            cmd_bin = cmd_line[0].upper()
-            if cmd_bin == CONST.CMD_END:
-                self.continue_running = False
-                for index, item in enumerate(self.threads):
-                    item[CONST.THREAD_NODE_KEY].join(
-                        timeout=self.thread_timeout
-                    )
-                    self.threads.pop(index)
-                continue
-            if cmd_bin in CONST.COMMANDS:
-                if self.threads[-1][CONST.CLASS_NODE_KEY].board_mode is True:
-                    status = self.threads[-1][CONST.CLASS_NODE_KEY].process_board_command(
-                        cmd_line
-                    )
-                    self.threads[-1][CONST.CLASS_NODE_KEY].update_global_status(
-                        status
-                    )
-                    self.update_global_status(status)
-                self.threads.append(
-                    {
-                        CONST.CLASS_NODE_KEY: ParserThread(self.game_board, self.ai),
-                        CONST.THREAD_NODE_KEY: Thread(
-                            target=ParserThread.process_command,
-                            args=(cmd_line,)
-                        )
-                    }
-                )
-                self.threads[-1][CONST.THREAD_NODE_KEY].start()
-            else:
-                self.perror(f"Unknown command: {cmd_bin}")
-                self.update_global_status(CONST.ERROR)
-            self.clean_threads()
-        return self.global_status
-
-    def clean_threads(self) -> None:
-        """
-        Clean the threads that have finished.
-        """
-        for index, item in enumerate(self.threads):
-            if item[CONST.CLASS_NODE_KEY].completed is True:
-                item[CONST.THREAD_NODE_KEY].join(timeout=self.thread_timeout)
-                self.update_global_status(
-                    item[CONST.CLASS_NODE_KEY].global_status
-                )
-                self.threads.pop(index)
-
     def update_global_status(self, status: bool) -> None:
         """
         Update the status of the global variable.
@@ -348,3 +290,29 @@ class Parser:
         """
         if status != CONST.SUCCESS:
             self.global_status = status
+
+    def __call__(self) -> int:
+        """_summary_
+            The function in charge of processing the incoming commands.
+
+        Returns:
+            int: _description_
+        """
+        node = ParserThread(self.game_board, self.ai)
+        while self.continue_running:
+            data = input()
+            cmd_line = data.split(" ")
+            cmd_bin = cmd_line[0].upper()
+            if cmd_bin == CONST.CMD_END:
+                self.continue_running = False
+            if cmd_bin in CONST.COMMANDS:
+                if node.board_mode is True:
+                    status = node.process_board_command(cmd_line)
+                    node.update_global_status(status)
+                    self.update_global_status(status)
+                node = ParserThread(self.game_board, self.ai)
+                node.process_command(cmd_line)
+            else:
+                self.perror(f"Unknown command: {cmd_bin}")
+                self.update_global_status(CONST.ERROR)
+        return self.global_status
