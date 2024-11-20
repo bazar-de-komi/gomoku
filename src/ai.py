@@ -141,7 +141,4 @@ class AI:
                 best_ratio = ratio
                 best_index = idx
         best_move = possible_ai_moves[best_index]
-        end_time = time.time()
-        execution_time = end_time - start_time
-        print(f"Temps d'exécution: {execution_time} secondes")
         return f"{best_move[1]},{best_move[0]}"
