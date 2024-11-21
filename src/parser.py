@@ -51,7 +51,7 @@ class SystemBoard:
 
     def recreate_board(self, size: Union[int, None] = None) -> None:
         """
-        Recreate the board.
+            Recreate the board.
         """
         if size is not None:
             self.create_board(size)
@@ -85,6 +85,40 @@ class ParserThread:
         """
         if status != CONST.SUCCESS:
             self.global_status = status
+
+    def process_ai_call(self) -> int:
+        """
+        Process the result returned by the ai.
+
+        Returns:
+            int: _description_
+        """
+        if self.ai is None:
+            return CONST.SUCCESS
+        response = self.ai.play_ai_turn(self.game_board.board)
+        x, y = response.split(",")
+        if not x.isdigit() and not y.isdigit():
+            my_print(f"ERROR Invalid AI response: {response}")
+            self.update_global_status(CONST.ERROR)
+            return CONST.ERROR
+        x = int(x)
+        y = int(y)
+        if x < 0 or x >= self.game_board.board_size:
+            my_print(f"ERROR Invalid AI response: {x}")
+            self.update_global_status(CONST.ERROR)
+            return CONST.ERROR
+        if y < 0 or y >= self.game_board.board_size:
+            my_print(f"ERROR Invalid AI response: {y}")
+            self.update_global_status(CONST.ERROR)
+            return CONST.ERROR
+        if self.game_board.board[x][y] != CONST.CELL_EMPTY:
+            my_print(f"ERROR Invalid AI response: {response}")
+            self.update_global_status(CONST.ERROR)
+            return CONST.ERROR
+        self.game_board.board[x][y] = CONST.CELL_PLAYER
+        my_print(response)
+        self.update_global_status(CONST.SUCCESS)
+        return CONST.SUCCESS
 
     def process_command(self, cmd: List[str]) -> int:
         """
@@ -124,11 +158,8 @@ class ParserThread:
             self.update_global_status(status)
             self.completed = True
             return status
-        my_print("UNKNOWN")
-        status = CONST.ERROR
-        self.update_global_status(status)
         self.completed = True
-        return status
+        return CONST.SUCCESS
 
     def print_success(self) -> None:
         """
@@ -173,9 +204,7 @@ class ParserThread:
         if len(cmd) != 1:
             my_print(f"ERROR Unsupported number of arguments: {len(cmd)}")
             return CONST.ERROR
-        if self.ai is not None:
-            my_print(self.ai.play_ai_turn(self.game_board.board))
-        return CONST.SUCCESS
+        return self.process_ai_call()
 
     def process_turn_command(self, cmd: List[str]) -> int:
         """
@@ -209,10 +238,11 @@ class ParserThread:
         if col < 0 or col >= self.game_board.board_size:
             my_print(f"ERROR Invalid turn parameters: {col}")
             return CONST.ERROR
+        if self.game_board[row][col] != CONST.CELL_EMPTY:
+            my_print(f"ERROR Invalid board cell: {row},{col}")
+            return CONST.ERROR
         self.game_board.board[row][col] = CONST.CELL_ENEMY
-        if self.ai is not None:
-            my_print(self.ai.play_ai_turn(self.game_board.board))
-        return CONST.SUCCESS
+        return self.process_ai_call()
 
     def process_board_command(self, cmd: List[str]) -> int:
         """
@@ -228,11 +258,7 @@ class ParserThread:
             return CONST.SUCCESS
         if cmd[0].upper() == "DONE":
             self.board_mode = False
-            msg = f"{self.game_board.board_size},"
-            msg += f"{self.game_board.board_size}"
-            my_print(msg)
-            self.update_global_status(CONST.SUCCESS)
-            return CONST.SUCCESS
+            return self.process_ai_call()
         board_line = cmd[0].split(",")
         if len(board_line) != 3:
             my_print(f"ERROR Invalid board line: {cmd[0]}")
@@ -295,7 +321,7 @@ class Parser:
         if status != CONST.SUCCESS:
             self.global_status = status
 
-    def __call__(self) -> int:
+    def __call__(self, single_turn: bool = False) -> int:
         """_summary_
             The function in charge of processing the incoming commands.
 
@@ -303,7 +329,7 @@ class Parser:
             int: _description_
         """
         node = ParserThread(self.game_board, self.ai)
-        while self.continue_running:
+        while self.continue_running or single_turn:
             data = input()
             cmd_line = data.split(" ")
             cmd_bin = cmd_line[0].upper()
@@ -321,4 +347,5 @@ class Parser:
             else:
                 my_print("UNKNOWN")
                 self.update_global_status(CONST.ERROR)
+            single_turn = False
         return self.global_status
