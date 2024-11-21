@@ -31,7 +31,7 @@ class SystemBoard:
         self.board: List[List[int]] = []
         self.board_size: int = 0
 
-    def create_board(self, size: int = 0) -> List[List[int]]:
+    def create_board(self, size: int = 0) -> None:
         """
         Create the board for the game.
         """
@@ -238,7 +238,7 @@ class ParserThread:
         if col < 0 or col >= self.game_board.board_size:
             my_print(f"ERROR Invalid turn parameters: {col}")
             return CONST.ERROR
-        if self.game_board[row][col] != CONST.CELL_EMPTY:
+        if self.game_board.board[row][col] != CONST.CELL_EMPTY:
             my_print(f"ERROR Invalid board cell: {row},{col}")
             return CONST.ERROR
         self.game_board.board[row][col] = CONST.CELL_ENEMY
