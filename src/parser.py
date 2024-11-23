@@ -48,6 +48,7 @@ class SystemBoard:
             [CONST.CELL_EMPTY for _ in range(self.board_size)]
             for _ in range(self.board_size)
         ]
+        pdebug(f"Board created: {self.board}")
 
     def clear_board(self) -> None:
         """
@@ -56,6 +57,7 @@ class SystemBoard:
         for coli, col in enumerate(self.board):
             for index in range(len(col)):
                 self.board[coli][index] = CONST.CELL_EMPTY
+        pdebug(f"Board cleared: {self.board}")
 
     def recreate_board(self, size: Union[int, None] = None) -> None:
         """
@@ -151,7 +153,7 @@ class ParserThread:
         if self.ai is None:
             return CONST.SUCCESS
         if self.game_board.board == [] or self.game_board.board is None:
-            my_print("ERROR Board not created")
+            my_print("ERROR Board not created or empty")
             return CONST.ERROR
         response = self.ai.play_ai_turn(self.game_board.board)
         x, y = response.split(",")
@@ -274,7 +276,7 @@ class ParserThread:
         if cmd[0] == "":
             return CONST.SUCCESS
         if self.game_board.board == [] or self.game_board.board is None:
-            my_print("ERROR Board not created")
+            my_print("ERROR Board not created or empty")
             return CONST.ERROR
         if cmd[0].upper() == "DONE":
             self.board_mode = False
