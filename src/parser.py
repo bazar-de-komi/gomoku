@@ -150,6 +150,9 @@ class ParserThread:
         """
         if self.ai is None:
             return CONST.SUCCESS
+        if self.game_board.board == [] or self.game_board.board is None:
+            my_print("ERROR Board not created")
+            return CONST.ERROR
         response = self.ai.play_ai_turn(self.game_board.board)
         x, y = response.split(",")
         if not x.isdigit() and not y.isdigit():
