@@ -54,3 +54,5 @@ MAX_SIMULATIONS = 50
 
 THREAD_NODE_KEY = "thread"
 CLASS_NODE_KEY = "node"
+
+DEBUG = False

@@ -22,6 +22,14 @@ def my_print(string: str, file: Union[TextIO, None] = None) -> None:
         print(string, flush=True, file=file)
 
 
+def pdebug(string: str) -> None:
+    """
+    Print the debug message.
+    """
+    if CONST.DEBUG:
+        my_print(string, sys.stderr)
+
+
 class SystemBoard:
     """
     The class in charge of creating the board for the game.
@@ -86,6 +94,53 @@ class ParserThread:
         if status != CONST.SUCCESS:
             self.global_status = status
 
+    def process_command(self, cmd: List[str]) -> int:
+        """
+        Process the command given in the command line.
+        Args:
+            cmd (List[str]): _description_
+
+        Returns:
+            int: _description_
+        """
+        command = cmd[0].upper()
+        # cmd_args = cmd[1:]
+        cmd_args = cmd
+        pdebug(f"Command: {command}, board_mode = {self.board_mode}")
+        if command == CONST.CMD_START:
+            pdebug("Processing start command")
+            status = self.process_start_command(cmd_args)
+            self.update_global_status(status)
+            self.completed = True
+            return status
+        if command == CONST.CMD_BEGIN:
+            pdebug("Processing begin command")
+            status = self.process_begin_command(cmd_args)
+            self.update_global_status(status)
+            self.completed = True
+            return status
+        if command == CONST.CMD_TURN:
+            pdebug("Processing turn command")
+            status = self.process_turn_command(cmd_args)
+            self.update_global_status(status)
+            self.completed = True
+            return status
+        if command == CONST.CMD_BOARD:
+            pdebug("Processing board command")
+            self.board_mode = True
+            self.board_index = 0
+            status = CONST.SUCCESS
+            self.update_global_status(status)
+            return status
+        if command == CONST.CMD_RESTART:
+            pdebug("Processing restart command")
+            status = self.process_restart_command(cmd_args)
+            self.update_global_status(status)
+            self.completed = True
+            return status
+        self.completed = True
+        return CONST.SUCCESS
+
     def process_ai_call(self) -> int:
         """
         Process the result returned by the ai.
@@ -118,47 +173,6 @@ class ParserThread:
         self.game_board.board[x][y] = CONST.CELL_PLAYER
         my_print(response)
         self.update_global_status(CONST.SUCCESS)
-        return CONST.SUCCESS
-
-    def process_command(self, cmd: List[str]) -> int:
-        """
-        Process the command given in the command line.
-        Args:
-            cmd (List[str]): _description_
-
-        Returns:
-            int: _description_
-        """
-        command = cmd[0].upper()
-        # cmd_args = cmd[1:]
-        cmd_args = cmd
-        if command == CONST.CMD_START:
-            status = self.process_start_command(cmd_args)
-            self.update_global_status(status)
-            self.completed = True
-            return status
-        if command == CONST.CMD_BEGIN:
-            status = self.process_begin_command(cmd_args)
-            self.update_global_status(status)
-            self.completed = True
-            return status
-        if command == CONST.CMD_TURN:
-            status = self.process_turn_command(cmd_args)
-            self.update_global_status(status)
-            self.completed = True
-            return status
-        if command == CONST.CMD_BOARD:
-            self.board_mode = True
-            self.board_index = 0
-            status = CONST.SUCCESS
-            self.update_global_status(status)
-            return status
-        if command == CONST.CMD_RESTART:
-            status = self.process_restart_command(cmd_args)
-            self.update_global_status(status)
-            self.completed = True
-            return status
-        self.completed = True
         return CONST.SUCCESS
 
     def print_success(self) -> None:
@@ -256,6 +270,9 @@ class ParserThread:
         """
         if cmd[0] == "":
             return CONST.SUCCESS
+        if self.game_board.board == [] or self.game_board.board is None:
+            my_print("ERROR Board not created")
+            return CONST.ERROR
         if cmd[0].upper() == "DONE":
             self.board_mode = False
             return self.process_ai_call()
@@ -269,6 +286,10 @@ class ParserThread:
         row = int(board_line[0])
         col = int(board_line[1])
         value = CONST.BOARD_EQUIVALENCE.get(board_line[2])
+        pdebug(
+            f"Board line: {board_line}, value: {value}," +
+            f" row: {row}, col: {col}"
+        )
         if value is None:
             my_print(f"ERROR Invalid board value: {board_line[2]}")
             return CONST.ERROR
@@ -277,6 +298,9 @@ class ParserThread:
             return CONST.ERROR
         if col < 0 or col >= self.game_board.board_size:
             my_print(f"ERROR Invalid board col: {col}")
+            return CONST.ERROR
+        if self.game_board.board[row] == []:
+            my_print(f"ERROR Board row not created: {row}")
             return CONST.ERROR
         self.game_board.board[row][col] = value
         return CONST.SUCCESS
@@ -308,6 +332,7 @@ class Parser:
         self.thread_timeout: int = 2
         self.global_status = CONST.SUCCESS
         self.continue_running: bool = True
+        self.board_mode: bool = False
         self.board: List[List[int]]
         self.game_board = SystemBoard()
         self.ai: AI = AI()
@@ -337,13 +362,17 @@ class Parser:
                 self.continue_running = False
                 self.update_global_status(CONST.SUCCESS)
                 continue
+            if self.board_mode is True:
+                node.board_mode = True
+                status = node.process_board_command(cmd_line)
+                node.update_global_status(status)
+                self.update_global_status(status)
+                continue
             if cmd_bin in CONST.COMMANDS:
-                if node.board_mode is True:
-                    status = node.process_board_command(cmd_line)
-                    node.update_global_status(status)
-                    self.update_global_status(status)
                 node = ParserThread(self.game_board, self.ai)
                 node.process_command(cmd_line)
+                if node.board_mode is True:
+                    self.board_mode = True
             else:
                 my_print("UNKNOWN")
                 self.update_global_status(CONST.ERROR)
