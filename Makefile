@@ -5,9 +5,11 @@
 ## Makefile
 ##
 
-SRC_DIR	=	./src
+# SRC_DIR	=	./src
 
-SRC	=	$(SRC_DIR)/main.py	\
+# SRC	=	$(SRC_DIR)/main.py	\
+
+SRC	=	pbrain-gomoku-ai
 
 # The variables concerning unit testing
 
@@ -66,8 +68,12 @@ C_GREEN	=	\033[38;5;46m$(C_BACKGROUND)
 C_RESET	=	\033[0m$(C_BACKGROUND)
 C_YELLOW	=	\033[38;5;226m$(C_BACKGROUND)
 
+# Build location
+BUILD_LOCATION="build"
+BINARY_LOCATION="dist"
+
 # Compile the project
-all: install_dependencies build_binary update_binary_location
+all: install_dependencies build_binary
 
 # Create the python environement
 create_environement:
@@ -83,7 +89,7 @@ install_dependencies: create_environement
 \
 	$(MY_PIP_BIN) list && \
 	echo -e "$(C_CYAN)Installing python dependencies$(C_RESET)" &&\
-	$(MY_PIP_BIN) install -r requirements.txt 
+	$(MY_PIP_BIN) install -r requirements.txt
 
 # Activate the python environement (
 #	this is a shortcut to help you keep your
