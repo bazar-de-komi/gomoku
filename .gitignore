@@ -31,5 +31,6 @@ config.ini
 **/wenv/**
 **/server_env/**
 **/wserver_env/**
+**/python_env/**
 **/doc/**
 **/.cache/**
